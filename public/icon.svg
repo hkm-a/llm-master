@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="128" y2="128">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#g)"/>
+  <text x="64" y="82" font-family="system-ui, sans-serif" font-size="56" font-weight="700" text-anchor="middle" fill="white">M</text>
+  <circle cx="38" cy="42" r="6" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="90" cy="42" r="6" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="64" cy="54" r="6" fill="rgba(255,255,255,0.5)"/>
+  <line x1="38" y1="42" x2="64" y2="54" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="90" y1="42" x2="64" y2="54" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="38" y1="42" x2="64" y2="32" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="90" y1="42" x2="64" y2="32" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="38" y1="42" x2="28" y2="54" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="90" y1="42" x2="100" y2="54" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="64" y1="54" x2="64" y2="70" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+</svg>
