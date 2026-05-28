@@ -1,6 +1,5 @@
 import React, { type ReactElement } from "react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@/lib/utils/cn";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,15 +9,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
 const variantStyles = {
   primary: "bg-primary-600 text-white hover:bg-primary-700",
-  secondary: "bg-secondary-200 text-secondary-900 hover:bg-secondary-300",
-  ghost: "bg-transparent hover:bg-secondary-100",
-  outline: "border border-secondary-300 hover:bg-secondary-50",
+  secondary: "bg-secondary-200 dark:bg-secondary-700 text-secondary-900 dark:text-secondary-100 hover:bg-secondary-300 dark:hover:bg-secondary-600",
+  ghost: "bg-transparent hover:bg-secondary-100 dark:hover:bg-secondary-800",
+  outline: "border border-secondary-300 dark:border-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-800",
 };
 
 const sizeStyles = {

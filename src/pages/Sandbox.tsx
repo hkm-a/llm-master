@@ -274,10 +274,10 @@ ${selectedTemplate.id === "lora" && `可训练参数:
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           实验沙盒
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           在本地环境中运行Python代码，实践LLM相关技术
         </p>
       </div>
@@ -324,9 +324,9 @@ ${selectedTemplate.id === "lora" && `可训练参数:
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="border-b border-gray-200 p-4"
+                className="border-b border-gray-200 dark:border-gray-700 p-4"
               >
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   <p>Python环境检测: <span className="text-green-600">✓ Python 3.10+</span></p>
                   <p>PyTorch版本: <span className="text-green-600">✓ 2.0+</span></p>
                 </div>
@@ -348,10 +348,10 @@ ${selectedTemplate.id === "lora" && `可训练参数:
                   animate={{ opacity: 1, height: "auto" }}
                   className="border-t border-gray-700 bg-gray-950 p-4 max-h-48 overflow-auto"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Terminal className="w-4 h-4 text-green-500" />
-                    <span className="text-xs text-gray-500">输出</span>
-                  </div>
+          <div className="flex items-center gap-2 mb-2">
+            <Terminal className="w-4 h-4 text-green-500" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">模拟输出（在Tauri桌面端将调用本地Python执行）</span>
+          </div>
                   <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap">
                     {output}
                   </pre>
@@ -372,17 +372,17 @@ ${selectedTemplate.id === "lora" && `可训练参数:
                   key={template.id}
                   className={`p-3 rounded-lg cursor-pointer transition-colors ${
                     selectedTemplate.id === template.id
-                      ? "bg-blue-50 border border-blue-200"
-                      : "bg-gray-50 hover:bg-gray-100"
+                      ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
+                      : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
                   }`}
                   onClick={() => handleTemplateChange(template)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className="font-medium text-gray-900 text-sm">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                     {template.name}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {template.description}
                   </div>
                 </motion.div>
@@ -394,7 +394,7 @@ ${selectedTemplate.id === "lora" && `可训练参数:
             <CardHeader>
               <CardTitle className="text-sm">实验说明</CardTitle>
             </CardHeader>
-            <div className="text-xs text-gray-600 space-y-2">
+            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-2">
               <p>
                 <strong>自注意力实现:</strong> 实现多头注意力机制的核心计算流程，包括Q/K/V矩阵的计算、注意力分数计算和Softmax归一化。
               </p>

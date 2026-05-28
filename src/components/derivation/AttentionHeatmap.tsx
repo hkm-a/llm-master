@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 
 interface AttentionHeatmapProps {
@@ -10,7 +11,7 @@ function getHeatColor(value: number): string {
   return `rgba(59, 130, 246, ${0.3 + value * 0.7})`;
 }
 
-export function AttentionHeatmap({
+export const AttentionHeatmap = memo(function AttentionHeatmap({
   attentionMatrix,
   tokens,
   highlightToken,
@@ -22,7 +23,7 @@ export function AttentionHeatmap({
           {tokens.map((token, i) => (
             <div
               key={i}
-              className="h-8 flex items-center justify-end pr-2 text-xs text-gray-600"
+              className="h-8 flex items-center justify-end pr-2 text-xs text-gray-600 dark:text-gray-300"
               style={{ height: "32px" }}
             >
               {token.slice(0, 10)}
@@ -36,7 +37,7 @@ export function AttentionHeatmap({
             {tokens.map((token, i) => (
               <div
                 key={i}
-                className="w-8 text-center text-xs text-gray-600"
+                className="w-8 text-center text-xs text-gray-600 dark:text-gray-300"
                 style={{ width: "32px" }}
               >
                 {token.slice(0, 5)}
@@ -58,7 +59,7 @@ export function AttentionHeatmap({
                 return (
                   <motion.div
                     key={colIndex}
-                    className="border border-gray-200 flex items-center justify-center text-xs font-medium"
+                    className="border border-gray-200 dark:border-gray-600 flex items-center justify-center text-xs font-medium"
                     style={{
                       width: "32px",
                       height: "32px",
@@ -80,4 +81,4 @@ export function AttentionHeatmap({
       </div>
     </div>
   );
-}
+});

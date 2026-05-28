@@ -174,7 +174,6 @@ export const chapters: Chapter[] = [
 export const contentIndex: ContentIndex = {
   chapters,
   totalLessons: chapters.reduce((sum, ch) => sum + ch.lessons.length, 0),
-  animatedLessons: [],
 };
 
 export function getChapterById(id: string): Chapter | undefined {

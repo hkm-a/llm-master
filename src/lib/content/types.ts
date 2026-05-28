@@ -21,5 +21,4 @@ export interface Lesson {
 export interface ContentIndex {
   chapters: Chapter[];
   totalLessons: number;
-  animatedLessons: string[];
 }

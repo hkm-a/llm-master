@@ -39,27 +39,27 @@ export class ErrorBoundary extends Component<
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-secondary-50">
+        <div className="min-h-screen flex items-center justify-center bg-secondary-50 dark:bg-secondary-900">
           <div className="max-w-md w-full mx-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-secondary-200 p-8 text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-white dark:bg-secondary-800 rounded-2xl shadow-sm border border-secondary-200 dark:border-secondary-700 p-8 text-center">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
 
-              <h2 className="text-xl font-bold text-secondary-900 mb-2">
+              <h2 className="text-xl font-bold text-secondary-900 dark:text-secondary-100 mb-2">
                 出错了
               </h2>
 
-              <p className="text-secondary-600 mb-6">
+              <p className="text-secondary-600 dark:text-secondary-400 mb-6">
                 应用程序遇到了意外错误。请尝试刷新页面。
               </p>
 
               {this.state.error && (
                 <details className="mb-6 text-left">
-                  <summary className="text-sm text-secondary-500 cursor-pointer hover:text-secondary-700">
+                  <summary className="text-sm text-secondary-500 dark:text-secondary-400 cursor-pointer hover:text-secondary-700 dark:hover:text-secondary-300">
                     错误详情
                   </summary>
-                  <pre className="mt-2 p-3 bg-secondary-50 rounded-lg text-xs text-secondary-700 overflow-auto max-h-32">
+                  <pre className="mt-2 p-3 bg-secondary-50 dark:bg-secondary-900 rounded-lg text-xs text-secondary-700 dark:text-secondary-300 overflow-auto max-h-32">
                     {this.state.error.message}
                   </pre>
                 </details>

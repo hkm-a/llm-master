@@ -6,6 +6,7 @@ import { Lesson } from "@/pages/Lesson";
 import { Sandbox } from "@/pages/Sandbox";
 import { Resources } from "@/pages/Resources";
 import { Progress } from "@/pages/Progress";
+import { NotFound } from "@/pages/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "progress",
         element: <Progress />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },

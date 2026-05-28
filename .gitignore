@@ -40,4 +40,12 @@ coverage/
 test-results/
 
 # User data (runtime)
-.llm-master/
+.llm-master/.omo/
+.omo/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Manim rendering cache
+public/videos/.manim_media/

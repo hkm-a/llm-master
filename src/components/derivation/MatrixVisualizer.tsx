@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 
 interface MatrixVisualizerProps {
@@ -8,7 +9,7 @@ interface MatrixVisualizerProps {
   caption?: string;
 }
 
-export function MatrixVisualizer({
+export const MatrixVisualizer = memo(function MatrixVisualizer({
   matrix,
   highlightRow,
   highlightCol,
@@ -21,16 +22,16 @@ export function MatrixVisualizer({
       (a) => a.row === row && a.col === col
     );
     
-    let className = "px-3 py-2 text-center border border-gray-300 transition-all duration-300";
+    let className = "px-3 py-2 text-center border border-gray-300 dark:border-gray-600 transition-all duration-300";
     
     if (anim?.type === "compute") {
-      className += " bg-yellow-100 animate-pulse";
+      className += " bg-yellow-100 dark:bg-yellow-900/30 animate-pulse";
     } else if (anim?.type === "result") {
-      className += " bg-green-100";
+      className += " bg-green-100 dark:bg-green-900/30";
     } else if (isHighlighted) {
-      className += " bg-blue-50";
+      className += " bg-blue-50 dark:bg-blue-900/30";
     } else {
-      className += " bg-white";
+      className += " bg-white dark:bg-gray-800";
     }
     
     return className;
@@ -39,9 +40,9 @@ export function MatrixVisualizer({
   return (
     <div className="inline-block">
       {caption && (
-        <div className="text-sm text-gray-600 mb-2 text-center">{caption}</div>
+        <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center">{caption}</div>
       )}
-      <div className="border-2 border-gray-400 rounded-lg overflow-hidden shadow-sm">
+      <div className="border-2 border-gray-400 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
         {matrix.map((row, rowIndex) => (
           <motion.div
             key={rowIndex}
@@ -66,4 +67,4 @@ export function MatrixVisualizer({
       </div>
     </div>
   );
-}
+});

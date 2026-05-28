@@ -9,12 +9,13 @@ import { useProgressStore } from "@/stores/progressStore";
 export function Chapter() {
   const { id } = useParams<{ id: string }>();
   const chapter = getChapterById(id || "");
-  const { progress, updateLessonProgress } = useProgressStore();
+  const progress = useProgressStore((s) => s.progress);
+  const updateLessonProgress = useProgressStore((s) => s.updateLessonProgress);
 
   if (!chapter) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
           章节不存在
         </h2>
         <Link to="/">
@@ -29,16 +30,16 @@ export function Chapter() {
       <div className="mb-6">
         <Link
           to="/"
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 mb-4"
+          className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           返回学习路径
         </Link>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           第{chapter.order}章: {chapter.title}
         </h1>
-        <p className="text-gray-600">{chapter.description}</p>
+        <p className="text-gray-600 dark:text-gray-400">{chapter.description}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -84,8 +85,8 @@ export function Chapter() {
             <div className="space-y-3">
               {chapter.resources.papers.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 mb-2">
-                    论文
+                  <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                     论文
                   </h4>
                   {chapter.resources.papers.map((paper, i) => (
                     <a
@@ -93,11 +94,11 @@ export function Chapter() {
                       href={paper}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-blue-600 hover:underline mb-1"
-                    >
-                      <FileText className="w-4 h-4" />
-                      查看论文
-                      <ExternalLink className="w-3 h-3" />
+                    className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-1"
+                  >
+                    <FileText className="w-4 h-4" />
+                    查看论文
+                    <ExternalLink className="w-3 h-3" />
                     </a>
                   ))}
                 </div>
@@ -105,8 +106,8 @@ export function Chapter() {
 
               {chapter.resources.github.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 mb-2">
-                    GitHub项目
+                  <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                     GitHub项目
                   </h4>
                   {chapter.resources.github.map((repo, i) => (
                     <a
@@ -114,11 +115,11 @@ export function Chapter() {
                       href={repo}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-blue-600 hover:underline mb-1"
-                    >
-                      <Github className="w-4 h-4" />
-                      查看项目
-                      <ExternalLink className="w-3 h-3" />
+                    className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-1"
+                  >
+                    <Github className="w-4 h-4" />
+                    查看项目
+                    <ExternalLink className="w-3 h-3" />
                     </a>
                   ))}
                 </div>
@@ -126,8 +127,8 @@ export function Chapter() {
 
               {chapter.resources.blogs.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-500 mb-2">
-                    博客文章
+                  <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                     博客文章
                   </h4>
                   {chapter.resources.blogs.map((blog, i) => (
                     <a
@@ -135,10 +136,10 @@ export function Chapter() {
                       href={blog}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-blue-600 hover:underline mb-1"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      阅读博客
+                    className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-1"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    阅读博客
                     </a>
                   ))}
                 </div>

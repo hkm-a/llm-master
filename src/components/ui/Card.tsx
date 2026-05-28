@@ -1,5 +1,5 @@
 import type { HTMLAttributes, ReactNode } from "react";
-import { cn } from "./Button"
+import { cn } from "@/lib/utils/cn"
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "hover" | "outline";
@@ -7,9 +7,9 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles = {
-  default: "bg-white border border-secondary-200",
-  hover: "bg-white border border-secondary-200 card-hover",
-  outline: "border-2 border-secondary-300",
+  default: "bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700",
+  hover: "bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 card-hover",
+  outline: "border-2 border-secondary-300 dark:border-secondary-600",
 };
 
 export function Card({
@@ -50,7 +50,7 @@ export function CardTitle({
   ...props
 }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("text-lg font-semibold", className)} {...props}>
+    <h3 className={cn("text-lg font-semibold dark:text-secondary-100", className)} {...props}>
       {children}
     </h3>
   );
@@ -62,7 +62,7 @@ export function CardDescription({
   ...props
 }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-secondary-600", className)} {...props}>
+    <p className={cn("text-sm text-secondary-600 dark:text-secondary-400", className)} {...props}>
       {children}
     </p>
   );

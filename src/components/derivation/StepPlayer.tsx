@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
+import { memo } from "react";
 import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
-import { useState } from "react";
 import { Button } from "../ui/Button";
 
 interface StepPlayerProps {
@@ -11,15 +11,20 @@ interface StepPlayerProps {
   onAutoPlayChange?: (playing: boolean) => void;
 }
 
-export function StepPlayer({
+/**
+ * Step navigation player for derivation visualizations.
+ *
+ * Uses `autoPlay` as the single source of truth for play state.
+ * The parent (DerivationViewer) owns the playing state via `isAutoPlaying`;
+ * this component only reflects + notifies changes.
+ */
+export const StepPlayer = memo(function StepPlayer({
   totalSteps,
   currentStep,
   onStepChange,
   autoPlay = false,
   onAutoPlayChange,
 }: StepPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(autoPlay);
-
   const handlePrev = () => {
     if (currentStep > 1) {
       onStepChange(currentStep - 1);
@@ -33,9 +38,7 @@ export function StepPlayer({
   };
 
   const togglePlay = () => {
-    const newState = !isPlaying;
-    setIsPlaying(newState);
-    onAutoPlayChange?.(newState);
+    onAutoPlayChange?.(!autoPlay);
   };
 
   return (
@@ -54,11 +57,14 @@ export function StepPlayer({
           <motion.button
             key={index}
             className={`w-2 h-2 rounded-full transition-colors ${
-              index + 1 <= currentStep ? "bg-blue-600" : "bg-gray-300"
+              index + 1 <= currentStep ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
             }`}
             onClick={() => onStepChange(index + 1)}
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.9 }}
+            aria-label={`第 ${index + 1} 步`}
+            role="tab"
+            aria-selected={index + 1 === currentStep}
           />
         ))}
       </div>
@@ -68,7 +74,7 @@ export function StepPlayer({
         size="sm"
         onClick={togglePlay}
       >
-        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        {autoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
       </Button>
 
       <Button
@@ -80,9 +86,9 @@ export function StepPlayer({
         <ChevronRight className="w-4 h-4" />
       </Button>
 
-      <span className="text-sm text-gray-600">
+      <span className="text-sm text-gray-600 dark:text-gray-400">
         {currentStep} / {totalSteps}
       </span>
     </div>
   );
-}
+});

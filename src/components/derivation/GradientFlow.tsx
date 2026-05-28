@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { FormulaDisplay } from "./FormulaDisplay";
 
@@ -10,7 +11,7 @@ interface GradientFlowProps {
   showGradient?: boolean;
 }
 
-export function GradientFlow({ layers, showGradient = true }: GradientFlowProps) {
+export const GradientFlow = memo(function GradientFlow({ layers, showGradient = true }: GradientFlowProps) {
   return (
     <div className="flex flex-col items-center gap-6">
       {layers.map((layer, index) => (
@@ -21,7 +22,7 @@ export function GradientFlow({ layers, showGradient = true }: GradientFlowProps)
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.2 }}
         >
-          <div className="w-24 text-right text-sm font-medium text-gray-700">
+          <div className="w-24 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
             {layer.name}
           </div>
           
@@ -50,7 +51,7 @@ export function GradientFlow({ layers, showGradient = true }: GradientFlowProps)
           </div>
 
           {showGradient && layer.gradient && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               ∇: [{layer.gradient.map((g) => g.toFixed(2)).join(", ")}]
             </div>
           )}
@@ -58,7 +59,7 @@ export function GradientFlow({ layers, showGradient = true }: GradientFlowProps)
       ))}
 
       {showGradient && (
-        <div className="flex items-center gap-4 mt-4 text-xs text-gray-500">
+        <div className="flex items-center gap-4 mt-4 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-green-500" />
             <span>正梯度</span>
@@ -71,7 +72,7 @@ export function GradientFlow({ layers, showGradient = true }: GradientFlowProps)
       )}
     </div>
   );
-}
+});
 
 interface BackpropStepProps {
   step: number;
@@ -79,7 +80,7 @@ interface BackpropStepProps {
   gradientFormula?: string;
 }
 
-export function BackpropStep({ step, lossFormula, gradientFormula }: BackpropStepProps) {
+export const BackpropStep = memo(function BackpropStep({ step, lossFormula, gradientFormula }: BackpropStepProps) {
   return (
     <div className="space-y-4">
       {step >= 1 && lossFormula && (
@@ -88,7 +89,7 @@ export function BackpropStep({ step, lossFormula, gradientFormula }: BackpropSte
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="text-sm font-medium text-gray-700 mb-2">损失函数</div>
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">损失函数</div>
           <FormulaDisplay formula={lossFormula} />
         </motion.div>
       )}
@@ -99,10 +100,10 @@ export function BackpropStep({ step, lossFormula, gradientFormula }: BackpropSte
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <div className="text-sm font-medium text-gray-700 mb-2">梯度计算</div>
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">梯度计算</div>
           <FormulaDisplay formula={gradientFormula} />
         </motion.div>
       )}
     </div>
   );
-}
+});
