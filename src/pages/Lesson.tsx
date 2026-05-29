@@ -1,21 +1,104 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Code, BookOpen, ChevronLeft, ChevronRight, Lightbulb, ExternalLink, FileText, Github, BookOpen as BookIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  Code,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Lightbulb,
+  FileText,
+  ExternalLink,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { DerivationViewer } from "@/components/derivation/DerivationViewer";
+import { Button } from "@/components/ui/Button";
+import { FormulaDisplay } from "@/components/derivation/FormulaDisplay";
+import { Quiz } from "@/components/learning/Quiz";
 import { getLessonContent } from "@/lib/content/lessons";
 import { chapters, getChapterById } from "@/lib/content/chapters";
+import type { Concept } from "@/lib/content/types";
 
 export function Lesson() {
   const { id } = useParams<{ id: string }>();
   const content = getLessonContent(id || "");
+  const [conceptIdx, setConceptIdx] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const navigate = useNavigate();
 
   const allLessons = useMemo(() => chapters.flatMap((c) => c.lessons), []);
-  const lessonMeta = useMemo(
-    () => allLessons.find((l) => l.id === id),
-    [allLessons, id],
-  );
+  const lessonMeta = useMemo(() => allLessons.find((l) => l.id === id), [allLessons, id]);
   const lessonTitle = lessonMeta?.title ?? id;
+
+  const chapter = content ? getChapterById(content.backLink.chapterId) : null;
+  const concepts = content?.concepts || [];
+  const currentConcept: Concept | undefined = concepts[conceptIdx];
+
+  // ── Prev / Next navigation ──
+  const flatLessonIds = useMemo(() => chapters.flatMap((c) => c.lessons.map((l) => l.id)), []);
+  const { prevId, nextId, prevMeta, nextMeta } = useMemo(() => {
+    const currentIndex = flatLessonIds.indexOf(id || "");
+    const prev = currentIndex > 0 ? flatLessonIds[currentIndex - 1] : null;
+    const next = currentIndex < flatLessonIds.length - 1 ? flatLessonIds[currentIndex + 1] : null;
+    return {
+      prevId: prev,
+      nextId: next,
+      prevMeta: prev ? allLessons.find((l) => l.id === prev) : null,
+      nextMeta: next ? allLessons.find((l) => l.id === next) : null,
+    };
+  }, [flatLessonIds, id, allLessons]);
+
+  // ── Keyboard shortcuts ──
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "ArrowLeft" && prevId) {
+        navigate(`/lesson/${prevId}`);
+      } else if (e.key === "ArrowRight" && nextId) {
+        navigate(`/lesson/${nextId}`);
+      }
+    },
+    [prevId, nextId, navigate]
+  );
+
+  // Reset concept index when lesson changes
+  useEffect(() => {
+    setConceptIdx(0);
+    setIsPlaying(false);
+  }, [id]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // ── Concept navigation ──
+  const goNextConcept = () => {
+    if (conceptIdx < concepts.length - 1) {
+      setConceptIdx(conceptIdx + 1);
+      setIsPlaying(false);
+    }
+  };
+  const goPrevConcept = () => {
+    if (conceptIdx > 0) {
+      setConceptIdx(conceptIdx - 1);
+      setIsPlaying(false);
+    }
+  };
+
+  // ── Auto-play concepts ──
+  useEffect(() => {
+    if (!isPlaying || concepts.length === 0) return;
+    const timer = setTimeout(() => {
+      if (conceptIdx < concepts.length - 1) {
+        setConceptIdx(conceptIdx + 1);
+      } else {
+        setIsPlaying(false);
+      }
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [isPlaying, conceptIdx, concepts.length]);
 
   if (!content) {
     return (
@@ -46,81 +129,9 @@ export function Lesson() {
     );
   }
 
-  const navigate = useNavigate();
-  const chapter = getChapterById(content.backLink.chapterId);
-
-  // ── Prev / Next navigation ──
-  const flatLessonIds = useMemo(
-    () => chapters.flatMap((c) => c.lessons.map((l) => l.id)),
-    [],
-  );
-  const { prevId, nextId, prevMeta, nextMeta } = useMemo(() => {
-    const currentIndex = flatLessonIds.indexOf(id || "");
-    const prev = currentIndex > 0 ? flatLessonIds[currentIndex - 1] : null;
-    const next =
-      currentIndex < flatLessonIds.length - 1
-        ? flatLessonIds[currentIndex + 1]
-        : null;
-    return {
-      prevId: prev,
-      nextId: next,
-      prevMeta: prev ? allLessons.find((l) => l.id === prev) : null,
-      nextMeta: next ? allLessons.find((l) => l.id === next) : null,
-    };
-  }, [flatLessonIds, id, allLessons]);
-
-  // ── Keyboard shortcuts ──
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === "ArrowLeft" && prevId) {
-        navigate(`/lesson/${prevId}`);
-      } else if (e.key === "ArrowRight" && nextId) {
-        navigate(`/lesson/${nextId}`);
-      }
-    },
-    [prevId, nextId, navigate]
-  );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
-
-  // ── Key Takeaways extraction ──
-  const keyTakeaways = useMemo(() => {
-    const takeaways: string[] = [];
-    const steps = content.derivationSteps;
-    if (content.bodyText.length > 0) {
-      const firstSentence = content.bodyText.split("。")[0];
-      if (firstSentence) takeaways.push(firstSentence + "。");
-    }
-    steps.forEach((step) => {
-      const sentences = step.explanation.split("。").filter(Boolean);
-      const keySentence = sentences[0];
-      if (keySentence && keySentence.length > 15) {
-        takeaways.push(keySentence + "。");
-      }
-    });
-    const unique = takeaways.filter(
-      (t, i) => takeaways.findIndex((o) => o.startsWith(t.slice(0, 20))) === i,
-    );
-    return unique.slice(0, 5);
-  }, [content]);
-
-  // ── Sandbox template mapping ──
-  const lessonToTemplate: Record<string, { id: string; name: string }> = {
-    ch4_lesson1: { id: "attention", name: "自注意力实现" },
-    ch2_lesson2: { id: "backprop", name: "反向传播演示" },
-    ch7_lesson1: { id: "lora", name: "LoRA实现" },
-  };
-  const sandboxTemplate = useMemo(
-    () => lessonToTemplate[id ?? ""] ?? null,
-    [id],
-  );
-
   return (
     <div className="max-w-5xl mx-auto">
+      {/* Header */}
       <div className="mb-6">
         <Link
           to={`/chapter/${content.backLink.chapterId}`}
@@ -129,59 +140,132 @@ export function Lesson() {
           <ArrowLeft className="w-4 h-4" />
           返回{chapter ? `第${chapter.order}章` : "章节"}
         </Link>
-
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{lessonTitle}</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          通过交互式动画学习核心概念
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Play className="w-5 h-5 text-purple-500" />
-              <CardTitle>公式推导动画</CardTitle>
-            </div>
-          </CardHeader>
-          <div className="p-4">
-            <DerivationViewer steps={content.derivationSteps} />
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Code className="w-5 h-5 text-blue-500" />
-              <CardTitle>代码实验沙盒</CardTitle>
-            </div>
-          </CardHeader>
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <p>前往<Link to="/sandbox" className="text-blue-600 hover:underline">实验沙盒</Link>运行相关代码模板</p>
-          </div>
-        </Card>
-      </div>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-green-500" />
-            <CardTitle>课程内容</CardTitle>
-          </div>
-        </CardHeader>
-        <div className="p-4">
-          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">核心概念</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{content.bodyText}</p>
-          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">数学基础</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            建议掌握线性代数（矩阵运算、特征值分解）、微积分（链式法则、梯度）和概率论（Softmax、熵）等基础知识。
-          </p>
+      {/* Concept tabs */}
+      {concepts.length > 0 && (
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+          {concepts.map((c, i) => (
+            <button
+              key={c.id}
+              onClick={() => {
+                setConceptIdx(i);
+                setIsPlaying(false);
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                i === conceptIdx
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
+            >
+              {i + 1}. {c.title}
+            </button>
+          ))}
+          <button
+            onClick={() => setIsPlaying(!isPlaying)}
+            className={`ml-2 p-2 rounded-lg transition-colors ${
+              isPlaying
+                ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                : "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+            }`}
+            title={isPlaying ? "暂停" : "自动播放"}
+          >
+            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </button>
         </div>
-      </Card>
+      )}
 
-      {/* ── Key Takeaways ── */}
-      {keyTakeaways.length > 0 && (
-        <Card className="mt-6">
+      {/* Current concept */}
+      {currentConcept && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Left: Animation */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Play className="w-5 h-5 text-purple-500" />
+                <CardTitle>动画演示</CardTitle>
+              </div>
+            </CardHeader>
+            <div className="p-4">
+              {currentConcept.animation ? (
+                <video
+                  key={currentConcept.id}
+                  src={currentConcept.animation}
+                  controls
+                  autoPlay
+                  className="w-full rounded-lg bg-black"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
+                  <p>暂无动画</p>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Right: Explanation */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-green-500" />
+                <CardTitle>{currentConcept.title}</CardTitle>
+              </div>
+            </CardHeader>
+            <div className="p-6">
+              {/* Formula */}
+              {currentConcept.formula && (
+                <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <FormulaDisplay formula={currentConcept.formula} />
+                </div>
+              )}
+              {/* Explanation */}
+              <div className="prose prose-gray dark:prose-invert max-w-none">
+                {currentConcept.explanation
+                  .split("\n")
+                  .filter(Boolean)
+                  .map((para, i) => (
+                    <p
+                      key={i}
+                      className="text-sm leading-relaxed text-gray-700 dark:text-gray-300 mb-3"
+                    >
+                      {para}
+                    </p>
+                  ))}
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Concept navigation */}
+      {concepts.length > 0 && (
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={goPrevConcept}
+            disabled={conceptIdx === 0}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            上一个概念
+          </button>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {conceptIdx + 1} / {concepts.length}
+          </span>
+          <button
+            onClick={goNextConcept}
+            disabled={conceptIdx === concepts.length - 1}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            下一个概念
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* 核心要点 */}
+      {content.bodyText && (
+        <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-yellow-500" />
@@ -189,145 +273,152 @@ export function Lesson() {
             </div>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              {keyTakeaways.map((takeaway, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-yellow-500 shrink-0" />
-                  {takeaway}
-                </li>
-              ))}
-            </ul>
+            <div className="prose prose-gray dark:prose-invert max-w-none">
+              {content.bodyText
+                .split("\n")
+                .filter(Boolean)
+                .map((para, i) => (
+                  <p
+                    key={i}
+                    className="text-sm leading-relaxed text-gray-700 dark:text-gray-300 mb-3"
+                  >
+                    {para}
+                  </p>
+                ))}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* ── Inline Code Examples ── */}
-      <Card className="mt-6">
+      {/* 公式推导动画 */}
+      {content.derivationSteps && content.derivationSteps.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Play className="w-5 h-5 text-purple-500" />
+              <CardTitle>公式推导动画</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {content.derivationSteps.slice(0, 3).map((step) => (
+                <div key={step.stepNumber} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-6 h-6 bg-purple-100 dark:bg-purple-900/40 text-purple-600 rounded-full flex items-center justify-center text-xs font-medium">
+                      {step.stepNumber}
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                      {step.title}
+                    </span>
+                  </div>
+                  <FormulaDisplay formula={step.formula} />
+                </div>
+              ))}
+              {content.derivationSteps.length > 3 && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  共 {content.derivationSteps.length} 个推导步骤
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 代码实验沙盒 */}
+      <Card className="mb-6">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Code className="w-5 h-5 text-blue-500" />
+            <CardTitle>代码实验沙盒</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              理论结合实践，在交互式沙盒中运行代码模板
+            </p>
+            <Link to="/sandbox" className="inline-block">
+              <Button>
+                <Code className="w-4 h-4 mr-2" />
+                打开实验沙盒
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 代码实践 */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-green-500" />
             <CardTitle>代码实践</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          {sandboxTemplate ? (
-            <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-              <div>
-                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {sandboxTemplate.name}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  在沙盒中运行并修改此代码模板，加深对概念的理解
-                </div>
-              </div>
-              <Link
-                to={`/sandbox?template=${sandboxTemplate.id}`}
-                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 shrink-0"
-              >
-                <ExternalLink className="w-4 h-4" />
-                打开沙盒
-              </Link>
+          <div className="space-y-3">
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                <strong>动手练习：</strong>打开沙盒，尝试修改代码参数，观察输出变化。
+              </p>
             </div>
-          ) : (
-            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  在沙盒中自由编写和运行 Python 代码，实践 LLM 相关技术
-                </div>
-              </div>
-              <Link
-                to="/sandbox"
-                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 shrink-0"
-              >
-                <ExternalLink className="w-4 h-4" />
-                打开沙盒
-              </Link>
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>思考题：</strong>如果改变注意力头的数量，会对模型产生什么影响？
+              </p>
             </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* ── Further Reading ── */}
-      {chapter?.resources && (
-        <Card className="mt-6">
+      {/* 交互式测验 */}
+      {content.quizzes && content.quizzes.length > 0 && (
+        <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <BookIcon className="w-5 h-5 text-orange-500" />
-              <CardTitle>延伸阅读</CardTitle>
+              <span className="text-xl">🧪</span>
+              <CardTitle>课后测验</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {chapter.resources.papers.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1">
-                  <FileText className="w-4 h-4 text-gray-400" />
-                  论文
-                </h4>
-                <ul className="space-y-1">
-                  {chapter.resources.papers.map((url, i) => (
-                    <li key={i}>
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        {url.replace("https://arxiv.org/abs/", "arxiv: ")}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {chapter.resources.blogs.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">博客 / 教程</h4>
-                <ul className="space-y-1">
-                  {chapter.resources.blogs.map((url, i) => (
-                    <li key={i}>
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        {url.replace(/https?:\/\//, "").replace(/\/.*$/, "")}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {chapter.resources.github.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1">
-                  <Github className="w-4 h-4" />
-                  GitHub 仓库
-                </h4>
-                <ul className="space-y-1">
-                  {chapter.resources.github.map((url, i) => (
-                    <li key={i}>
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
-                      >
-                        <Github className="w-3 h-3" />
-                        {url.replace("https://github.com/", "")}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">检验一下你学到的知识吧！</p>
+              {content.quizzes.map((quiz) => (
+                <Quiz key={quiz.id} quiz={quiz} />
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Prev / Next navigation */}
+      {/* 延伸阅读 */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <ExternalLink className="w-5 h-5 text-indigo-500" />
+            <CardTitle>延伸阅读</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600 deep:text-gray-400">
+              深入学习本节课内容，推荐以下资源：
+            </p>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                <BookOpen className="w-4 h-4" />
+                <span>查阅相关论文和文档</span>
+              </li>
+              <li className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                <Code className="w-4 h-4" />
+                <span>查看开源实现代码</span>
+              </li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Prev / Next lesson */}
       <div className="mt-8 flex items-center justify-between gap-4">
         {prevId && prevMeta ? (
           <Link

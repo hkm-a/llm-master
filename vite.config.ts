@@ -10,11 +10,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 1420,
+    port: 8080,
   },
   test: {
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    exclude: ["e2e/**", "node_modules/**"],
   },
 });

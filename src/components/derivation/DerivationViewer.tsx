@@ -25,6 +25,23 @@ export function DerivationViewer({ steps }: DerivationViewerProps) {
 
   const currentStepData = steps[currentStep - 1];
 
+  const attentionData = useMemo(
+    () => (currentStepData ? deriveAttentionData(currentStepData) : null),
+    [currentStepData]
+  );
+  const matrixData = useMemo(
+    () => (currentStepData ? deriveMatrixData(currentStepData) : null),
+    [currentStepData]
+  );
+  const gradientData = useMemo(
+    () => (currentStepData ? deriveGradientData(currentStepData) : null),
+    [currentStepData]
+  );
+  const videoData = useMemo(
+    () => (currentStepData ? deriveVideoData(currentStepData) : null),
+    [currentStepData]
+  );
+
   useEffect(() => {
     if (!isAutoPlaying) return;
 
@@ -46,23 +63,6 @@ export function DerivationViewer({ steps }: DerivationViewerProps) {
       </div>
     );
   }
-
-  const attentionData = useMemo(
-    () => deriveAttentionData(currentStepData),
-    [currentStepData],
-  );
-  const matrixData = useMemo(
-    () => deriveMatrixData(currentStepData),
-    [currentStepData],
-  );
-  const gradientData = useMemo(
-    () => deriveGradientData(currentStepData),
-    [currentStepData],
-  );
-  const videoData = useMemo(
-    () => deriveVideoData(currentStepData),
-    [currentStepData],
-  );
 
   const renderStepContent = () => {
     if (currentStepData.formula && !currentStepData.animation) {
@@ -155,11 +155,7 @@ export function DerivationViewer({ steps }: DerivationViewerProps) {
     }
 
     return (
-      <motion.div
-        key="default"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
+      <motion.div key="default" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <p className="text-gray-600 dark:text-gray-400">{currentStepData.explanation}</p>
       </motion.div>
     );
@@ -170,9 +166,7 @@ export function DerivationViewer({ steps }: DerivationViewerProps) {
       <CardHeader>
         <CardTitle>{currentStepData.title}</CardTitle>
       </CardHeader>
-      <div className="py-8">
-        {renderStepContent()}
-      </div>
+      <div className="py-8">{renderStepContent()}</div>
       {steps.length > 1 && (
         <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
           <StepPlayer

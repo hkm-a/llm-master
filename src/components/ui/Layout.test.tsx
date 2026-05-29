@@ -59,9 +59,7 @@ describe("Layout", () => {
     useNavigationStore.setState({ sidebarCollapsed: true });
     renderLayout();
 
-    expect(
-      screen.getByRole("button", { name: "展开侧边栏" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "展开侧边栏" })).toBeInTheDocument();
   });
 
   test("main content area should have correct margin classes", () => {
@@ -76,5 +74,28 @@ describe("Layout", () => {
     renderLayout();
     const main = document.querySelector("main");
     expect(main?.className).toContain("ml-0");
+  });
+
+  test("opens search dialog on Ctrl+K", () => {
+    renderLayout();
+    fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+    // SearchDialog should be rendered - check for search input or dialog content
+    expect(screen.getByPlaceholderText(/搜索/)).toBeInTheDocument();
+  });
+
+  test("opens search dialog on / key", () => {
+    renderLayout();
+    fireEvent.keyDown(window, { key: "/" });
+    expect(screen.getByPlaceholderText(/搜索/)).toBeInTheDocument();
+  });
+
+  test("does not open search when typing in input", () => {
+    renderLayout();
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+    fireEvent.keyDown(input, { key: "/" });
+    expect(screen.queryByPlaceholderText(/搜索/)).not.toBeInTheDocument();
+    document.body.removeChild(input);
   });
 });
